@@ -53,13 +53,31 @@ function SidebarContainer(props: {
     initial: { collapsed: false },
   })
 
+  let previousValidMetrics: SessionTokenMetrics | undefined
+
   const metrics = createMemo<SessionTokenMetrics>(() => {
     const sId = props.sessionID
     const session = sId ? context.data.session.get(sId) : undefined
     const messages = sId ? context.data.session.message.list(sId) ?? [] : []
     const location = context.location ?? context.data.location.default()
     const models = context.data.location.model.list(location) ?? []
-    return computeSessionMetrics({ session, messages, models })
+    const computed = computeSessionMetrics({ session, messages, models })
+
+    if (
+      computed.contextWindow.currentTokens === 0 &&
+      previousValidMetrics &&
+      previousValidMetrics.sessionID === computed.sessionID &&
+      previousValidMetrics.contextWindow.currentTokens > 0
+    ) {
+      computed.contextWindow = previousValidMetrics.contextWindow
+      computed.lastTurn = previousValidMetrics.lastTurn
+    }
+
+    if (computed.contextWindow.currentTokens > 0) {
+      previousValidMetrics = computed
+    }
+
+    return computed
   })
 
   function toggleCollapse() {
@@ -87,13 +105,31 @@ function SessionDetailPanel(props: {
   const { context, panel } = props
   const theme = context.theme
 
+  let previousValidMetrics: SessionTokenMetrics | undefined
+
   const metrics = createMemo<SessionTokenMetrics>(() => {
     const sId = panel.sessionID
     const session = sId ? context.data.session.get(sId) : undefined
     const messages = sId ? context.data.session.message.list(sId) ?? [] : []
     const location = context.location ?? context.data.location.default()
     const models = context.data.location.model.list(location) ?? []
-    return computeSessionMetrics({ session, messages, models })
+    const computed = computeSessionMetrics({ session, messages, models })
+
+    if (
+      computed.contextWindow.currentTokens === 0 &&
+      previousValidMetrics &&
+      previousValidMetrics.sessionID === computed.sessionID &&
+      previousValidMetrics.contextWindow.currentTokens > 0
+    ) {
+      computed.contextWindow = previousValidMetrics.contextWindow
+      computed.lastTurn = previousValidMetrics.lastTurn
+    }
+
+    if (computed.contextWindow.currentTokens > 0) {
+      previousValidMetrics = computed
+    }
+
+    return computed
   })
 
   return (

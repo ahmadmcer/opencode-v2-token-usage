@@ -167,4 +167,50 @@ describe("core metrics computation", () => {
     expect(metrics.lastTurn?.output).toBe(1_200)
     expect(metrics.lastTurn?.reasoning).toBe(500)
   })
+
+  it("preserves last settled turn when an in-progress assistant turn has zero/undefined tokens", () => {
+    const session = {
+      id: "ses_flicker_test",
+      cost: 0.10,
+      model: { providerID: "google", id: "gemini-3.8-flash" },
+      tokens: { input: 140_000, output: 5_000, cache: { read: 0, write: 0 } },
+    }
+
+    const messages = [
+      // Completed turn #1
+      {
+        type: "assistant",
+        tokens: { input: 140_000, output: 5_000, reasoning: 1_000 },
+        cost: 0.10,
+        model: { providerID: "google", id: "gemini-3.8-flash" },
+      },
+      // In-progress / streaming turn #2 (tokens not yet populated)
+      {
+        type: "assistant",
+        tokens: { input: 0, output: 0 },
+        cost: 0,
+        model: { providerID: "google", id: "gemini-3.8-flash" },
+      },
+    ]
+
+    const models = [
+      {
+        id: "gemini-3.8-flash",
+        providerID: "google",
+        limit: { context: 1_050_000, output: 65_536 },
+      },
+    ]
+
+    const metrics = computeSessionMetrics({ session, messages, models })
+
+    // Must NOT drop to 0! Must maintain the settled turn context (140,000)
+    expect(metrics.contextWindow.currentTokens).toBe(140_000)
+    expect(metrics.contextWindow.usedPercent).toBeCloseTo((140_000 / 1_050_000) * 100, 1)
+
+    // Last turn must be Turn #1, not the unpopulated in-progress turn
+    expect(metrics.lastTurn).toBeDefined()
+    expect(metrics.lastTurn?.turnIndex).toBe(1)
+    expect(metrics.lastTurn?.input).toBe(140_000)
+    expect(metrics.lastTurn?.output).toBe(5_000)
+  })
 })

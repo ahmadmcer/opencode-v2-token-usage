@@ -113,8 +113,9 @@ export function computeSessionMetrics(options: {
   let cacheWrite = session?.tokens?.cache?.write ?? 0
   let sessionCost = session?.cost ?? 0
 
-  let lastAssistantMsg: RawMessage | undefined
-  let assistantTurnCount = 0
+  let lastSettledAssistantMsg: RawMessage | undefined
+  let settledTurnIndex = 0
+  let totalAssistantTurns = 0
 
   const needsAggregation =
     input === 0 && output === 0 && cacheRead === 0 && messages.length > 0
@@ -122,8 +123,17 @@ export function computeSessionMetrics(options: {
   for (const msg of messages) {
     if (msg.type === "assistant" || msg.type === "compaction") {
       if (msg.type === "assistant") {
-        assistantTurnCount++
-        lastAssistantMsg = msg
+        totalAssistantTurns++
+        const hasTokens =
+          (msg.tokens?.input ?? 0) > 0 ||
+          (msg.tokens?.output ?? 0) > 0 ||
+          (msg.tokens?.cache?.read ?? 0) > 0 ||
+          (msg.tokens?.cache?.write ?? 0) > 0
+
+        if (hasTokens) {
+          lastSettledAssistantMsg = msg
+          settledTurnIndex = totalAssistantTurns
+        }
       }
 
       if (needsAggregation && msg.tokens) {
@@ -152,16 +162,16 @@ export function computeSessionMetrics(options: {
   }
 
   // Active Context Window calculation:
-  // In LLM requests, prompt tokens of the last assistant turn (input + cache.read + cache.write)
+  // In LLM requests, prompt tokens of the last settled assistant turn (input + cache.read + cache.write)
   // represent the active context window loaded into the model.
-  const activeModelRef = lastAssistantMsg?.model ?? modelRef
+  const activeModelRef = lastSettledAssistantMsg?.model ?? modelRef
   const limitTokens = resolveContextLimit(activeModelRef, models)
 
   let currentContextTokens = 0
   let lastTurn: TurnStats | undefined
 
-  if (lastAssistantMsg?.tokens) {
-    const t = lastAssistantMsg.tokens
+  if (lastSettledAssistantMsg?.tokens) {
+    const t = lastSettledAssistantMsg.tokens
     const turnIn = t.input ?? 0
     const turnOut = t.output ?? 0
     const turnReasoning = t.reasoning ?? 0
@@ -173,16 +183,22 @@ export function computeSessionMetrics(options: {
     currentContextTokens = turnIn + turnCacheRead + turnCacheWrite
 
     lastTurn = {
-      turnIndex: assistantTurnCount,
-      modelId: lastAssistantMsg.model?.id ?? modelId,
+      turnIndex: settledTurnIndex,
+      modelId: lastSettledAssistantMsg.model?.id ?? modelId,
       input: turnIn,
       output: turnOut,
       reasoning: turnReasoning,
       cacheRead: turnCacheRead,
       cacheWrite: turnCacheWrite,
       total: turnTotal,
-      cost: lastAssistantMsg.cost ?? 0,
+      cost: lastSettledAssistantMsg.cost ?? 0,
     }
+  } else if (session?.tokens) {
+    // Fallback to session tokens if no settled message exists yet
+    const sessIn = session.tokens.input ?? 0
+    const sessCacheRead = session.tokens.cache?.read ?? 0
+    const sessCacheWrite = session.tokens.cache?.write ?? 0
+    currentContextTokens = sessIn + sessCacheRead + sessCacheWrite
   }
 
   const usedPercent =
@@ -234,7 +250,7 @@ export function computeSessionMetrics(options: {
     contextWindow,
     sessionTotal,
     lastTurn,
-    turnCount: assistantTurnCount,
+    turnCount: settledTurnIndex || totalAssistantTurns,
     cacheHitRate,
     estimatedCacheSavingsUSD,
   }
