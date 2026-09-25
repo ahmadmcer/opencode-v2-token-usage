@@ -25,11 +25,10 @@ It provides real-time visibility into LLM context window saturation, token consu
 - **Cost & Savings Tracking**:
   - Real-time session USD cost.
   - Estimated dollar savings from prompt cache hits.
-- **Multiple OpenCode Surfaces**:
+- **Features**:
   - **Collapsible Sidebar Widget (`sidebar.content`)**: Expandable panel with gauge and detailed table. State persists across restarts.
-  - **Session Panel & Dialog (`session.panel`)**: Full-screen or modal analytics view.
-  - **Slash Command (`/tokens` or `/usage`)**: Quick summary anywhere in chat.
   - **Agent Tool (`token_usage`)**: Programmatic tool for agents to check token budget in Code Mode or subagent workflows.
+  - **Slash Command (`/tokens`)**: Quick token summary in session chat.
 
 ---
 
@@ -85,16 +84,9 @@ To load it specifically for the TUI interface, you can also add it to `~/.config
 }
 ```
 
-### 2. Slash Commands
+### 2. Chat Slash Command
 
-In any OpenCode session:
-
-- `/tokens` — Displays the token usage and context status.
-- `/usage` — Alias for `/tokens`.
-
-Or open the Command Palette (`Ctrl+P` / `Cmd+P`) and choose:
-
-- **Token Usage: Show Breakdown**
+In any OpenCode chat session, you can run `/tokens` to output a token summary in the conversation.
 
 ---
 
