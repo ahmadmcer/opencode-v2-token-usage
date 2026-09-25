@@ -74,5 +74,13 @@
     "tui",
     "cli"
   ],
-  "author": "OpenCode Community"
+  "author": "Ahmad Nawawi <ahmadmcer@gmail.com>",
+  "homepage": "https://github.com/ahmadmcer/opencode-v2-token-usage#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmadmcer/opencode-v2-token-usage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ahmadmcer/opencode-v2-token-usage/issues"
+  }
 }
