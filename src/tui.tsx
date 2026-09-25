@@ -183,50 +183,57 @@ const plugin = Plugin.define({
     })
 
     // 5. Slash commands (/tokens, /usage) & Palette command
-    context.keymap.layer(() => ({
-      mode: "global",
-      priority: 10,
-      commands: [
-        {
-          id: "token-usage.show",
-          title: "Token Usage: Show Breakdown",
-          group: "Token Usage",
-          palette: true,
-          slash: { name: "tokens", aliases: ["usage", "token-usage"] },
-          enabled: () => true,
-          suggested: true,
-          run: async () => {
-            const opened = context.ui.panel.open("token-usage.panel")
-            if (!opened) {
-              const location = context.location ?? context.data.location.default()
-              const models = context.data.location.model.list(location) ?? []
-              // Try to find the focused/current session
-              const sessions = context.data.session.list()
-              const currentSession = sessions[0]
-              const messages = currentSession?.id
-                ? context.data.session.message.list(currentSession.id) ?? []
-                : []
-              const metrics = computeSessionMetrics({
-                session: currentSession,
-                messages,
-                models,
-              })
+    const unregisterKeymap = context.ui.slot({
+      append: "app",
+      render: () => {
+        context.keymap.layer(() => ({
+          mode: "global",
+          priority: 10,
+          commands: [
+            {
+              id: "token-usage.show",
+              title: "Token Usage: Show Breakdown",
+              group: "Token Usage",
+              palette: true,
+              slash: { name: "tokens", aliases: ["usage", "token-usage"] },
+              enabled: () => true,
+              suggested: true,
+              run: async () => {
+                const opened = context.ui.panel.open("token-usage.panel")
+                if (!opened) {
+                  const location = context.location ?? context.data.location.default()
+                  const models = context.data.location.model.list(location) ?? []
+                  // Try to find the focused/current session
+                  const sessions = context.data.session.list()
+                  const currentSession = sessions[0]
+                  const messages = currentSession?.id
+                    ? context.data.session.message.list(currentSession.id) ?? []
+                    : []
+                  const metrics = computeSessionMetrics({
+                    session: currentSession,
+                    messages,
+                    models,
+                  })
 
-              await context.ui.dialog.alert({
-                title: "Token Usage Summary",
-                message: buildTextSummary(metrics),
-              })
-            }
-          },
-        },
-      ],
-    }))
+                  await context.ui.dialog.alert({
+                    title: "Token Usage Summary",
+                    message: buildTextSummary(metrics),
+                  })
+                }
+              },
+            },
+          ],
+        }))
+        return null
+      },
+    })
 
     return () => {
       unregisterSidebar()
       unregisterPromptFooter()
       unregisterHomeFooter()
       unregisterPanel()
+      unregisterKeymap()
     }
   },
 })
