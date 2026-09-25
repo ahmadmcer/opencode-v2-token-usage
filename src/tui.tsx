@@ -2,7 +2,6 @@ import { Plugin } from "@opencode/plugin/tui"
 import { createEffect, createMemo, createSignal, onCleanup, Show } from "solid-js"
 import { formatCost, formatPercent, formatTokens } from "./calculator.js"
 import { BreakdownTable } from "./components/BreakdownTable.js"
-import { StatusBadge } from "./components/StatusBadge.js"
 import { UsageSidebar } from "./components/UsageSidebar.js"
 import { computeSessionMetrics } from "./core.js"
 import type { SessionTokenMetrics } from "./types.js"
@@ -81,41 +80,6 @@ function SidebarContainer(props: {
   )
 }
 
-function StatusContainer(props: {
-  context: PluginContext
-  sessionID?: string
-}) {
-  const { context } = props
-  const theme = context.theme
-
-  const metrics = createMemo<SessionTokenMetrics>(() => {
-    const sId = props.sessionID
-    const session = sId ? context.data.session.get(sId) : undefined
-    const messages = sId ? context.data.session.message.list(sId) ?? [] : []
-    const location = context.location ?? context.data.location.default()
-    const models = context.data.location.model.list(location) ?? []
-    return computeSessionMetrics({ session, messages, models })
-  })
-
-  function showDetails() {
-    const opened = context.ui.panel.open("token-usage.panel")
-    if (!opened) {
-      void context.ui.dialog.alert({
-        title: "Token Usage Details",
-        message: buildTextSummary(metrics()),
-      })
-    }
-  }
-
-  return (
-    <StatusBadge
-      metrics={metrics()}
-      theme={theme}
-      onClick={showDetails}
-    />
-  )
-}
-
 function SessionDetailPanel(props: {
   panel: any
   context: PluginContext
@@ -156,23 +120,7 @@ const plugin = Plugin.define({
       ),
     })
 
-    // 2. Prompt footer slot: Live compact status badge
-    const unregisterPromptFooter = context.ui.slot({
-      append: "prompt.footer.status",
-      render: ({ sessionID }) => (
-        <StatusContainer context={context} sessionID={sessionID} />
-      ),
-    })
-
-    // 3. Home footer slot: Compact status badge on home view
-    const unregisterHomeFooter = context.ui.slot({
-      append: "home.footer.status",
-      render: () => (
-        <StatusContainer context={context} />
-      ),
-    })
-
-    // 4. Session panel slot: Full detailed panel
+    // 2. Session panel slot: Full detailed panel
     const unregisterPanel = context.ui.slot({
       append: "session.panel",
       render: (panel) => (
@@ -230,8 +178,6 @@ const plugin = Plugin.define({
 
     return () => {
       unregisterSidebar()
-      unregisterPromptFooter()
-      unregisterHomeFooter()
       unregisterPanel()
       unregisterKeymap()
     }

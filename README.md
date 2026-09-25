@@ -26,7 +26,6 @@ It provides real-time visibility into LLM context window saturation, token consu
   - Real-time session USD cost.
   - Estimated dollar savings from prompt cache hits.
 - **Multiple OpenCode Surfaces**:
-  - **Prompt Footer (`prompt.footer.status`)**: Compact real-time badge right above the composer (`⚡ 48k/200k (24%) • $0.045`).
   - **Collapsible Sidebar Widget (`sidebar.content`)**: Expandable panel with gauge and detailed table. State persists across restarts.
   - **Session Panel & Dialog (`session.panel`)**: Full-screen or modal analytics view.
   - **Slash Command (`/tokens` or `/usage`)**: Quick summary anywhere in chat.
@@ -35,11 +34,6 @@ It provides real-time visibility into LLM context window saturation, token consu
 ---
 
 ## 📸 TUI Preview
-
-### Prompt Footer Status
-```
-⚡ 48k/200k (24%) • $0.045
-```
 
 ### Collapsible Sidebar
 ```
@@ -57,6 +51,14 @@ It provides real-time visibility into LLM context window saturation, token consu
    Cache Hit Rate    80%
   Estimated Cost     $0.045
    Cache Savings     ~$0.108
+  Last Turn (#1)     $0.030
+   Prompt / Out      8k / 1.2k
+```
+
+### Collapsed Sidebar
+```
+▶ Token Usage (24% • $0.045)
+```
   Last Turn (#1)     $0.030
    Prompt / Out      8k / 1.2k
 ```
