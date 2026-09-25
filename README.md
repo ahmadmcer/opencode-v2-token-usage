@@ -36,6 +36,7 @@ It provides real-time visibility into LLM context window saturation, token consu
 ## 📸 TUI Preview
 
 ### Collapsible Sidebar
+
 ```
 ▼ Token Usage
   Model              claude-3-7-sonnet
@@ -56,6 +57,7 @@ It provides real-time visibility into LLM context window saturation, token consu
 ```
 
 ### Collapsed Sidebar
+
 ```
 ▶ Token Usage (24% • $0.045)
 ```
@@ -71,19 +73,7 @@ Add the plugin to your `opencode.jsonc` (project or global `~/.config/opencode/o
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugins": [
-    "opencode-v2-token-usage"
-  ]
-}
-```
-
-Or for local development:
-
-```jsonc
-{
-  "plugins": [
-    "./projects/opencode-plugins/opencode-v2-token-usage"
-  ]
+  "plugins": ["opencode-v2-token-usage"],
 }
 ```
 
@@ -98,10 +88,12 @@ To load it specifically for the TUI interface, you can also add it to `~/.config
 ### 2. Slash Commands
 
 In any OpenCode session:
+
 - `/tokens` — Displays the token usage and context status.
 - `/usage` — Alias for `/tokens`.
 
 Or open the Command Palette (`Ctrl+P` / `Cmd+P`) and choose:
+
 - **Token Usage: Show Breakdown**
 
 ---
@@ -109,21 +101,25 @@ Or open the Command Palette (`Ctrl+P` / `Cmd+P`) and choose:
 ## 🛠️ Development
 
 This plugin is built with:
+
 - [TypeScript](https://www.typescriptlang.org/)
 - [Solid JS](https://www.solidjs.com/) & [@opentui/solid](https://opentui.org/)
 - [esbuild](https://esbuild.github.io/) & [Babel](https://babeljs.io/)
 
 ### Build
+
 ```bash
 bun run build
 ```
 
 ### Type Check
+
 ```bash
 bun run check
 ```
 
 ### Run Tests
+
 ```bash
 bun test
 ```
