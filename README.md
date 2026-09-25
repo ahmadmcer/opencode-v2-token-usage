@@ -59,9 +59,6 @@ It provides real-time visibility into LLM context window saturation, token consu
 ```
 ▶ Token Usage (24% • $0.045)
 ```
-  Last Turn (#1)     $0.030
-   Prompt / Out      8k / 1.2k
-```
 
 ---
 
