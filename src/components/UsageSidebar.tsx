@@ -1,5 +1,5 @@
 import { Show } from "solid-js"
-import { formatCost, formatPercent, formatTokens } from "../calculator.js"
+import { formatCost } from "../calculator.js"
 import type { SessionTokenMetrics } from "../types.js"
 import { BreakdownTable } from "./BreakdownTable.js"
 
@@ -15,11 +15,23 @@ export function UsageSidebar(props: UsageSidebarProps) {
   const cw = () => props.metrics.contextWindow
 
   function summaryText(): string {
-    const cur = formatTokens(cw().currentTokens)
-    const lim = formatTokens(cw().limitTokens)
-    const pct = formatPercent(cw().usedPercent)
+    const pct = cw().usedPercent
+    const pctStr =
+      pct >= 10 ? `${Math.round(pct)}%` : pct > 0 ? `${pct.toFixed(1)}%` : "0%"
     const cost = formatCost(props.metrics.sessionCost)
-    return `(${cur}/${lim} • ${pct} • ${cost})`
+    return `(${pctStr} • ${cost})`
+  }
+
+  const summaryColor = () => {
+    switch (cw().saturation) {
+      case "critical":
+        return theme.text.feedback?.error?.base ?? "red"
+      case "warning":
+        return theme.text.feedback?.warning?.base ?? "yellow"
+      case "normal":
+      default:
+        return theme.text.muted
+    }
   }
 
   return (
@@ -27,16 +39,15 @@ export function UsageSidebar(props: UsageSidebarProps) {
       {/* Header Row */}
       <box
         flexDirection="row"
-        gap={1}
         onMouseUp={props.onToggle}
       >
-        <text fg={theme.text.base}>{props.collapsed ? "▶" : "▼"}</text>
         <text fg={theme.text.base}>
+          {props.collapsed ? "▶ " : "▼ "}
           <b>Token Usage</b>
         </text>
         <Show when={props.collapsed}>
-          <text fg={theme.text.muted}>
-            <span style={{ fg: theme.text.muted }}>{` ${summaryText()}`}</span>
+          <text fg={summaryColor()}>
+            {` ${summaryText()}`}
           </text>
         </Show>
       </box>
