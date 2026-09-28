@@ -28,6 +28,7 @@
     "tui.js",
     "core.js",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "dependencies": {
